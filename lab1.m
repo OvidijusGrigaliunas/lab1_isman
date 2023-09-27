@@ -72,10 +72,10 @@ while ~(all(e(:) == 0))
    
     num_of_cicles =  num_of_cicles +1;
 end
-disp('Ciklai:')
-disp(num_of_cicles)
-disp('Klaidos:')
-disp(e)
+disp('Ciklai:');
+disp(num_of_cicles);
+disp('Klaidos:');
+disp(e);
 %% Papildoma
 clc
 clear all
@@ -125,11 +125,21 @@ priorClassPear = sum(Y == -1) / length(Y);
 meanClassApple = mean(classAppleData);
 meanClassPear = mean(classPearData);
 % Apskaičiuojamas standartinis nuokrypis
-stdClassApple = std(classAppleData);
-stdClassPear = std(classPearData);
+% (https://en.wikipedia.org/wiki/Standard_deviation)
+% MATLAB naudoja formulę, kur yra naudojamas N-1, o ne N. Dėl to nuo
+% appleDataLength atemu 1. Tai leidžia palyginti gautus rezultatus su
+% MATLAB funkcija std.
+appleDataLength = length(classPearData(:,1)) - 1;
+stdClassApple = (classAppleData - meanClassApple) .^ 2;
+stdClassApple = [sqrt(sum(stdClassApple(:,1)) / appleDataLength), sqrt(sum(stdClassApple(:,2)) / appleDataLength)];
+% stdClassApple = std(classAppleData);
+pearDataLength = length(classPearData(:,1)) - 1;
+stdClassPear= (classPearData - meanClassPear) .^ 2;
+stdClassPear = [sqrt(sum(stdClassPear(:,1)) / pearDataLength), sqrt(sum(stdClassPear(:,2)) / pearDataLength)];
+% stdClassPear = std(classApplepear);
 
-% Gauso tikimybės tankio funkciją (paimta iš
-% https://en.wikipedia.org/wiki/Naive_Bayes_classifier)
+% Gauso tikimybės tankio funkciją 
+% https://en.wikipedia.org/wiki/Naive_Bayes_classifier
 gaussianApple = @(x, j) (1 / (sqrt(2 * pi) * stdClassApple(j))) * exp(-((x - meanClassApple(j))^2) / (2 * stdClassApple(j)^2));
 gaussianPear = @(x, j) (1 / (sqrt(2 * pi) * stdClassPear(j))) * exp(-((x - meanClassPear(j))^2) / (2 * stdClassPear(j)^2));
 
@@ -145,7 +155,7 @@ for i = 1:size(X, 1)
     posteriorClassApple = priorClassApple * likelihoodClassApple;
     posteriorClassPear = priorClassPear * likelihoodClassPear;
     
-    % Numatymui priskirkite klasę, kurios užpakalinė tikimybė yra didžiausia
+    % Numatymui priskiriama klasę, kurios užpakalinė tikimybė yra didžiausia
     if posteriorClassApple > posteriorClassPear
         predictions(i,1) = 1;
     else
